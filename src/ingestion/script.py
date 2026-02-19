@@ -4,8 +4,8 @@ from src.shared.embedder import embedder
 from src.shared.vector_store import vector_store
 
 def main():
-    pdf_loader = PDFLoader("data\er-toshtuk.pdf")
-    documents = pdf_loader.load_pdf()
+    pdf_loader = PDFLoader(path="data\er-toshtuk.pdf")
+    documents = list(pdf_loader.load_pdf())
     print(f'Loaded {len(documents)} docs')
     
     chunks = chunker.chunk(documents)
@@ -19,7 +19,6 @@ def main():
     payloads = [{"text": text} for text in texts]
     vector_store.add(ids, embeddings, payloads)
     
-    vector_store.add(embeddings)
     print("Saved fo Qdrant")
     
 if __name__ == "__main__":

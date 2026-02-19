@@ -4,10 +4,8 @@ from typing import List
 
 class PDFLoader:
     def __init__(self, path: str):
-        self.path
+        self.path = path
         
     def load_pdf(self) -> List[Document]:
         loader = PyPDFLoader(self.path)
         return loader.lazy_load()
-
-pdf_loader = PDFLoader()
