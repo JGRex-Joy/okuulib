@@ -1,5 +1,5 @@
 from qdrant_client import QdrantClient
-from qdrant_client.models import Distance, VectorParams, PointStruct
+from qdrant_client.models import Distance, VectorParams, PointStruct, Filter, FieldCondition, MatchValue
 from typing import List, Dict, Optional
 
 import os
@@ -29,7 +29,7 @@ class VectorStore:
 
     def add(
         self,
-        ids: List[int],
+        ids: List[str],
         vectors: List[List[float]],
         payloads: List[Dict],
         batch_size: int = 16
@@ -44,7 +44,7 @@ class VectorStore:
                 PointStruct(
                     id=batch_ids[j],
                     vector=batch_vectors[j],
-                    payload=batch_payloads[j],
+                    payload=batch_payloads[j]
                 )
                 for j in range(len(batch_ids))
             ]
@@ -61,13 +61,25 @@ class VectorStore:
         self,
         query_vector: List[float],
         top_k: int = 5,
-        filters: Optional[Dict] = None,
+        book_name: Optional[str] = None
     ):
+        query_filter: Optional[Filter] = None
+        
+        if book_name:
+            query_filter = Filter(
+                must = [
+                    FieldCondition(
+                        key = "book",
+                        match = MatchValue(value=book_name)
+                    )
+                ]
+            )
+        
         return self.client.query_points(
             collection_name=self.collection_name,
             query=query_vector,
             limit=top_k,
-            query_filter=filters,
+            query_filter=query_filter,
         )
         
 vector_store = VectorStore()
