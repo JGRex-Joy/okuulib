@@ -1,8 +1,8 @@
 from fastapi import FastAPI
+from src.retrieval.services.rag_service import rag_service
 
 app = FastAPI()
 
-@app.get("/ask")
-async def ask(prompt: str) -> str:
-    answer = call_rag(prompt)
-    return answer
+@app.post("/ask")
+async def ask(query: str, book_name: str):
+    return await rag_service.ask(query, book_name)

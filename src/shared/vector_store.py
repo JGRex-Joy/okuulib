@@ -1,4 +1,5 @@
 from qdrant_client import QdrantClient
+from qdrant_client import models
 from qdrant_client.models import Distance, VectorParams, PointStruct, Filter, FieldCondition, MatchValue
 from typing import List, Dict, Optional
 
@@ -25,6 +26,18 @@ class VectorStore:
                     size=vector_size,
                     distance=Distance.COSINE
                 )
+            )
+            
+            self.client.create_payload_index(
+                collection_name=self.collection_name,
+                field_name="book",
+                field_schema="keyword"
+            )
+            
+            self.client.create_payload_index(
+                collection_name=self.collection_name,
+                field_name="text",
+                field_schema="text"
             )
 
     def add(
@@ -60,6 +73,7 @@ class VectorStore:
     def search(
         self,
         query_vector: List[float],
+        query_text: str,
         top_k: int = 5,
         book_name: Optional[str] = None
     ):
@@ -77,9 +91,34 @@ class VectorStore:
         
         return self.client.query_points(
             collection_name=self.collection_name,
-            query=query_vector,
-            limit=top_k,
-            query_filter=query_filter,
+            prefetch=[
+                # Векторка
+                models.Prefetch(
+                    query=query_vector,
+                    using="default",
+                    limit=top_k*3,
+                    filter=query_filter
+                ),
+                
+                # BM25
+                models.Prefetch(
+                    query=models.Filter(
+                        must=[
+                            models.FieldCondition(
+                                key="text",
+                                match=models.MatchText(text=query_text)
+                            )
+                        ]
+                    ),
+                    using="default",
+                    limit=top_k*3,
+                    filter=query_filter
+                )
+            ],
+            query=models.FusionQuery(
+                fusion=models.Fusion.RRF
+            ),
+            limit=top_k
         )
         
 vector_store = VectorStore()
