@@ -8,7 +8,7 @@ from src.ingestion.clean import pdfCleaner
 from pathlib import Path
 import uuid
 
-book_path: str = "data\janyl-myrza.pdf"
+book_path: str = "data\er-toshtuk.pdf"
     
 def main():
     pdf_loader = PDFLoader(path=book_path)
