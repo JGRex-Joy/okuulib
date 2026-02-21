@@ -1,6 +1,7 @@
 from src.ingestion.load_pdf import PDFLoader
 from src.ingestion.chunk import chunker
-from src.shared.embedder import embedder
+from shared.embedders.dense_embedder import dense_embedder
+from shared.embedders.sparse_embedder import sparse_embedder
 from src.shared.vector_store import vector_store
 from src.ingestion.clean import pdfCleaner
 
@@ -20,10 +21,14 @@ def main():
     print(f'Chunked {len(chunks)} docs')
     
     texts = [doc.page_content for doc in chunks]
-    embeddings = embedder.embed_batch(texts)
-    print(f'Embeddings genereted for {len(embeddings)} chunks')
     
-    ids = [str(uuid.uuid4()) for _ in embeddings]
+    dense_vectors = dense_embedder.embed_batch(texts)
+    print(f'Dense embeddings genereted: {len(dense_vectors)}')
+    
+    sparse_vectors = sparse_embedder.embed_batch(texts)
+    print(f'Sparse embeddings generated: {len(sparse_vectors)}')
+    
+    ids = [str(uuid.uuid4()) for _ in texts]
     payloads = [
         {
         "text": text,
@@ -32,7 +37,7 @@ def main():
         }
         for i, text in enumerate(texts)
     ]
-    vector_store.add(ids, embeddings, payloads)
+    vector_store.add(ids, dense_vectors, sparse_vectors, payloads)
     
     print("Saved fo Qdrant")
     

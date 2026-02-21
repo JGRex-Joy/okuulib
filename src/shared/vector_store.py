@@ -1,6 +1,6 @@
 from qdrant_client import QdrantClient
 from qdrant_client import models
-from qdrant_client.models import Distance, VectorParams, PointStruct, Filter, FieldCondition, MatchValue
+from qdrant_client.models import Distance, VectorParams, PointStruct, Filter, FieldCondition, MatchValue, SparseVector
 from typing import List, Dict, Optional
 
 import os
@@ -22,10 +22,15 @@ class VectorStore:
         if not self.client.collection_exists(self.collection_name):
             self.client.create_collection(
                 collection_name=self.collection_name,
-                vectors_config=VectorParams(
-                    size=vector_size,
-                    distance=Distance.COSINE
-                )
+                vectors_config={
+                    "dense": VectorParams(
+                        size=vector_size,
+                        distance=Distance.COSINE
+                    )
+                },
+                sparse_vectors_config={
+                    "sparse": models.SparseVectorParams()
+                }
             )
             
             self.client.create_payload_index(
@@ -44,6 +49,7 @@ class VectorStore:
         self,
         ids: List[str],
         vectors: List[List[float]],
+        sparse_vectors: List[SparseVector],
         payloads: List[Dict],
         batch_size: int = 16
     ):
@@ -51,12 +57,16 @@ class VectorStore:
         for i in range(0, total, batch_size):
             batch_ids = ids[i:i + batch_size]
             batch_vectors = vectors[i:i + batch_size]
+            batch_sparse = sparse_vectors[i:i + batch_size]
             batch_payloads = payloads[i:i + batch_size]
 
             points = [
                 PointStruct(
                     id=batch_ids[j],
-                    vector=batch_vectors[j],
+                    vector={
+                        "dense": batch_vectors[j],
+                        "sparse": batch_sparse[j]   
+                    },
                     payload=batch_payloads[j]
                 )
                 for j in range(len(batch_ids))
@@ -73,6 +83,7 @@ class VectorStore:
     def search(
         self,
         query_vector: List[float],
+        query_sparse: SparseVector,
         query_text: str,
         top_k: int = 5,
         book_name: Optional[str] = None
@@ -92,29 +103,22 @@ class VectorStore:
         return self.client.query_points(
             collection_name=self.collection_name,
             prefetch=[
-                # Векторка
+                # Dense - семантика
                 models.Prefetch(
                     query=query_vector,
                     using="default",
                     limit=top_k*3,
                     filter=query_filter
                 ),
-                
-                # BM25
+                # Sparse - bm25
                 models.Prefetch(
-                    query=models.Filter(
-                        must=[
-                            models.FieldCondition(
-                                key="text",
-                                match=models.MatchText(text=query_text)
-                            )
-                        ]
-                    ),
-                    using="default",
+                    query=query_sparse,
+                    using="sparse",
                     limit=top_k*3,
                     filter=query_filter
                 )
             ],
+            
             query=models.FusionQuery(
                 fusion=models.Fusion.RRF
             ),

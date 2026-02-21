@@ -5,7 +5,7 @@ import os
 from dotenv import load_dotenv
 load_dotenv()
 
-class Embedder:
+class DenseEmbedder:
     def __init__(self,  
                 model: str = "text-embedding-3-small", 
                 batch_size: int = 100,
@@ -43,4 +43,4 @@ class Embedder:
         for i in range(0, len(texts), self.batch_size):
             yield texts[i:i + self.batch_size]
 
-embedder = Embedder()
+dense_embedder = DenseEmbedder()
