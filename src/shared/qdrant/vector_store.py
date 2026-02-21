@@ -1,22 +1,20 @@
 from qdrant_client import QdrantClient
 from qdrant_client import models
 from qdrant_client.models import Distance, VectorParams, PointStruct, Filter, FieldCondition, MatchValue, SparseVector
-from typing import List, Dict, Optional
+from typing import List, Dict
 
-import os
-from dotenv import load_dotenv
-load_dotenv()
+from src.config import settings
 
 class VectorStore:
     def __init__(self):
-        self.collection_name = "okuulib"
+        self.collection_name = settings.COLLECTION_NAME
         self.client = QdrantClient(
-            url=os.getenv("QDRANT_URL"),
-            api_key=os.getenv("QDRANT_API_KEY"),
-            timeout=60
+            url=settings.QDRANT_URL,
+            api_key=settings.QDRANT_API_KEY,
+            timeout=settings.QDRANT_TIMEOUT
         )
         
-        self._ensure_collection(vector_size=1536)
+        self._ensure_collection(vector_size=settings.VECTOR_SIZE)
         
     def _ensure_collection(self, vector_size: int):
         if not self.client.collection_exists(self.collection_name):
@@ -51,7 +49,7 @@ class VectorStore:
         vectors: List[List[float]],
         sparse_vectors: List[SparseVector],
         payloads: List[Dict],
-        batch_size: int = 16
+        batch_size = settings.QDRANT_BATCH_SIZE
     ):
         total = len(ids)
         for i in range(0, total, batch_size):
@@ -78,50 +76,5 @@ class VectorStore:
             )
 
             print(f'Uploaded {(i + len(batch_ids)) / total * 100:.1f}%')
-    
-            
-    def search(
-        self,
-        query_vector: List[float],
-        query_sparse: SparseVector,
-        top_k: int = 5,
-        book_name: Optional[str] = None
-    ):
-        query_filter: Optional[Filter] = None
-        
-        if book_name:
-            query_filter = Filter(
-                must = [
-                    FieldCondition(
-                        key = "book",
-                        match = MatchValue(value=book_name)
-                    )
-                ]
-            )
-        
-        return self.client.query_points(
-            collection_name=self.collection_name,
-            prefetch=[
-                # Dense - семантика
-                models.Prefetch(
-                    query=query_vector,
-                    using="dense",
-                    limit=top_k*3,
-                    filter=query_filter
-                ),
-                # Sparse - bm25
-                models.Prefetch(
-                    query=query_sparse,
-                    using="sparse",
-                    limit=top_k*3,
-                    filter=query_filter
-                )
-            ],
-            
-            query=models.FusionQuery(
-                fusion=models.Fusion.RRF
-            ),
-            limit=top_k
-        )
         
 vector_store = VectorStore()

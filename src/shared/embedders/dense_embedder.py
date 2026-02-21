@@ -1,22 +1,16 @@
 from typing import List, Iterable
 from openai import OpenAI
 
-import os
-from dotenv import load_dotenv
-load_dotenv()
+from src.config import settings
 
 class DenseEmbedder:
-    def __init__(self,  
-                model: str = "text-embedding-3-small", 
-                batch_size: int = 100,
-    ):
-        api_key: str = os.getenv("OPENAI_API_KEY")
-        if api_key is None:
+    def __init__(self):
+        if settings.OPENAI_API_KEY is None:
             raise ValueError("API_KEY not found")
         
-        self.client = OpenAI(api_key=api_key)
-        self.model = model
-        self.batch_size = batch_size
+        self.client = OpenAI(api_key=settings.OPENAI_API_KEY)
+        self.model = settings.DENSE_EMBEDDING_MODEL
+        self.batch_size = settings.DENSE_EMBEDDING_BATCH_SIZE
 
     def embed(self, text: str) -> List[float]:
         response = self.client.embeddings.create(

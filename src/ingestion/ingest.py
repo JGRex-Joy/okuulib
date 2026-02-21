@@ -2,7 +2,7 @@ from src.ingestion.load_pdf import PDFLoader
 from src.ingestion.chunk import chunker
 from src.shared.embedders.dense_embedder import dense_embedder
 from src.shared.embedders.sparse_embedder import sparse_embedder
-from src.shared.vector_store import vector_store
+from src.shared.qdrant.vector_store import vector_store
 from src.ingestion.clean import pdfCleaner
 
 from pathlib import Path

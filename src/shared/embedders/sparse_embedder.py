@@ -2,9 +2,11 @@ from fastembed import SparseTextEmbedding
 from qdrant_client import models
 from typing import List
 
+from src.config import settings
+
 class SparseEmbedder:
     def __init__(self):
-        self.model = SparseTextEmbedding(model_name="Qdrant/bm25")
+        self.model = SparseTextEmbedding(model_name=settings.SPARSE_EMBEDDING_MODEL)
         
     def embed(self, text: str) -> models.SparseVector:
         result = list(self.model.embed([text]))[0]

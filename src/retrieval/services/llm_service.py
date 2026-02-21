@@ -1,12 +1,9 @@
 from openai import OpenAI
 
 from src.retrieval.prompts.prompt_loader import load_prompt
+from src.config import settings
 
-import os
-from dotenv import load_dotenv
-load_dotenv()
-
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+client = OpenAI(api_key=settings.OPENAI_API_KEY)
 
 class LLMService:
     def generate_answer(self, query: str, contexts: list[str]) -> str:
@@ -21,7 +18,7 @@ class LLMService:
         )
         
         response = client.chat.completions.create(
-            model="gpt-4o-mini",
+            model=settings.LLM_MODEL,
             messages=[
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": query_prompt}
