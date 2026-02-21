@@ -84,7 +84,6 @@ class VectorStore:
         self,
         query_vector: List[float],
         query_sparse: SparseVector,
-        query_text: str,
         top_k: int = 5,
         book_name: Optional[str] = None
     ):
@@ -106,7 +105,7 @@ class VectorStore:
                 # Dense - семантика
                 models.Prefetch(
                     query=query_vector,
-                    using="default",
+                    using="dense",
                     limit=top_k*3,
                     filter=query_filter
                 ),

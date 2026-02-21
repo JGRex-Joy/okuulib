@@ -1,5 +1,5 @@
-from shared.embedders.dense_embedder import dense_embedder
-from shared.embedders.sparse_embedder import sparse_embedder
+from src.shared.embedders.dense_embedder import dense_embedder
+from src.shared.embedders.sparse_embedder import sparse_embedder
 from src.shared.vector_store import vector_store
 from src.retrieval.services.llm_service import llm_service
 
