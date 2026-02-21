@@ -15,6 +15,12 @@ class RAGService:
             book_name=book_name
         )
         
+        print(f"\n🔍 Найдено чанков: {len(found.points)}")
+        for p in found.points:
+            print(f"  book: {p.payload['book']} | score: {p.score:.3f}")
+            print(f"  text: {p.payload['text'][:100]}")
+            print()
+            
         contexts = [
             point.payload["text"]
             for point in found.points

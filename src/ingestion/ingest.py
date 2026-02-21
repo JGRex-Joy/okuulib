@@ -7,10 +7,11 @@ from src.ingestion.clean import pdfCleaner
 
 from pathlib import Path
 import uuid
+import time
 
 DATA_DIR = Path("data")
 
-def ingest_book(book_path: Path):
+def ingest_book(book_path: Path, retries: int = 3):
     print(f"\n{'='*50}")
     print(f"📖 Book: {book_path.stem}")
     print(f"{'='*50}")
@@ -41,27 +42,42 @@ def ingest_book(book_path: Path):
         for i, text in enumerate(texts)
     ]
 
-    vector_store.add(ids, dense_vectors, sparse_vectors, payloads)
-    print(f"✅ Saved to Qdrant: {book_path.stem}")
+    for attempt in range(1, retries + 1):
+        try:
+            vector_store.add(ids, dense_vectors, sparse_vectors, payloads)
+            print(f"✅ Saved to Qdrant: {book_path.stem}")
+            return True
+        except Exception as e:
+            print(f"⚠️ Retry {attempt}/{retries} is failed: {e}")
+            if attempt < retries:
+                time.sleep(5)
+
+    print(f"❌ Could not save: {book_path.stem}")
+    return False
 
 
 def main():
     books = list(DATA_DIR.glob("*.pdf"))
 
     if not books:
-        print("❌ PDF not found in data/")
+        print("❌ No books in data/")
         return
 
     print(f"\n🚀 Books found: {len(books)}")
     for book in books:
         print(f"  - {book.stem}")
 
+    failed = []
     for i, book_path in enumerate(books, 1):
         print(f"\n[{i}/{len(books)}]", end="")
-        ingest_book(book_path)
+        success = ingest_book(book_path)
+        if not success:
+            failed.append(book_path.stem)
 
     print(f"\n{'='*50}")
-    print(f"🎉 Ready! Books loaded: {len(books)}")
+    print(f"🎉 Ready! Loaded: {len(books) - len(failed)}/{len(books)}")
+    if failed:
+        print(f"❌ Could not load: {', '.join(failed)}")
     print(f"{'='*50}\n")
 
 
