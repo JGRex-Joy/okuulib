@@ -2,12 +2,14 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_core.documents import Document
 from typing import List
 
+from src.config import settings
+
 class Chunker:
-    def __init__(self, chunk_size: int = 600, chunk_overlap: int = 120):
+    def __init__(self):
         
         self.splitter = RecursiveCharacterTextSplitter(
-            chunk_size=chunk_size,
-            chunk_overlap=chunk_overlap,
+            chunk_size=settings.CHUNK_SIZE,
+            chunk_overlap=settings.CHUNK_OVERLAP,
             separators=["\n\n", "\n", ".", " ", ""]
         )
         

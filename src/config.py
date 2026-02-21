@@ -23,7 +23,7 @@ class Settings(BaseSettings):
     SPARSE_EMBEDDING_MODEL: str = "Qdrant/bm25"
     
     # LLM
-    LLM_MODEL: str = "gpt-4o-mini"
+    LLM_MODEL: str = "gpt-4.1-mini"
     
     # Search
     TOP_K: int = 10

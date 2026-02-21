@@ -3,9 +3,10 @@ from openai import OpenAI
 from src.retrieval.prompts.prompt_loader import load_prompt
 from src.config import settings
 
-client = OpenAI(api_key=settings.OPENAI_API_KEY)
-
 class LLMService:
+    def __init__(self):
+        self.client = OpenAI(api_key=settings.OPENAI_API_KEY)
+    
     def generate_answer(self, query: str, contexts: list[str]) -> str:
         context_text = "\n\n".join(contexts)
         
@@ -17,7 +18,7 @@ class LLMService:
             question=query
         )
         
-        response = client.chat.completions.create(
+        response = self.client.chat.completions.create(
             model=settings.LLM_MODEL,
             messages=[
                 {"role": "system", "content": system_prompt},
