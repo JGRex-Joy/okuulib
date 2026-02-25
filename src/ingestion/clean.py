@@ -12,7 +12,7 @@ from pathlib import Path
 from docx import Document
 
 PATTERN = re.compile(
-    r"(www\.)?bizdin\.kg",
+    r"(www\.)?bizdin\.kg(электрондуккитепканасы)?",
     flags=re.IGNORECASE
 )
 
