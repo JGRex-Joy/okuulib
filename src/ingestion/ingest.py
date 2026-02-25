@@ -1,9 +1,8 @@
-from src.ingestion.load_pdf import PDFLoader
+from src.ingestion.load_docx import DocxLoader
 from src.ingestion.chunk import chunker
 from src.shared.embedders.dense_embedder import dense_embedder
 from src.shared.embedders.sparse_embedder import sparse_embedder
 from src.shared.qdrant.vector_store import vector_store
-from src.ingestion.clean import pdfCleaner
 
 from pathlib import Path
 import uuid
@@ -11,14 +10,14 @@ import time
 
 DATA_DIR = Path("data")
 
-def ingest_book(book_path: Path, retries: int = 3):
+
+def ingest_book(book_path: Path, retries: int = 3) -> bool:
     print(f"\n{'='*50}")
     print(f"📖 Book: {book_path.stem}")
     print(f"{'='*50}")
 
-    pdf_loader = PDFLoader(path=str(book_path))
-    documents = list(pdf_loader.load_pdf())
-    documents = pdfCleaner.clean_documents(documents)
+    loader = DocxLoader(path=str(book_path))
+    documents = list(loader.load_docx())
     print(f"✅ Pages loaded: {len(documents)}")
 
     chunks = chunker.chunk(documents)
@@ -37,7 +36,7 @@ def ingest_book(book_path: Path, retries: int = 3):
         {
             "text": text,
             "book": book_path.stem,
-            "chunk_id": i
+            "chunk_id": i,
         }
         for i, text in enumerate(texts)
     ]
@@ -48,7 +47,7 @@ def ingest_book(book_path: Path, retries: int = 3):
             print(f"✅ Saved to Qdrant: {book_path.stem}")
             return True
         except Exception as e:
-            print(f"⚠️ Retry {attempt}/{retries} is failed: {e}")
+            print(f"⚠️ Retry {attempt}/{retries} failed: {e}")
             if attempt < retries:
                 time.sleep(5)
 
@@ -57,10 +56,10 @@ def ingest_book(book_path: Path, retries: int = 3):
 
 
 def main():
-    books = list(DATA_DIR.glob("*.pdf"))
+    books = list(DATA_DIR.glob("*.docx"))
 
     if not books:
-        print("❌ No books in data/")
+        print("❌ No .docx books found in data/")
         return
 
     print(f"\n🚀 Books found: {len(books)}")

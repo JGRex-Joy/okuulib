@@ -1,11 +1,27 @@
 from fastapi import FastAPI
+from pydantic import BaseModel
 
-from src.retrieval.services.rag_service import rag_service
-from src.models import AskRequest, AskResponse
+from src.ingestion.api.router import router as ingestion_router
+from src.retrieval.api.router import router as retrieval_router
 
-app = FastAPI()
+app = FastAPI(
+    title="OkuuLib API",
+    description="RAG-сервис для кыргызской литературы",
+    version="1.0.0",
+)
 
-@app.post("/ask", response_model=AskResponse)
-async def ask(request: AskRequest):
-    answer = await rag_service.ask(request.query, request.book_name)
-    return AskResponse(answer=answer)
+# Routers
+app.include_router(ingestion_router)
+app.include_router(retrieval_router)
+
+
+# ── Health ────────────────────────────────────────────────────────────────────
+
+class HealthResponse(BaseModel):
+    status: str
+    message: str
+
+
+@app.get("/health", response_model=HealthResponse, tags=["System"])
+async def health():
+    return HealthResponse(status="ok", message="OkuuLib is running")
