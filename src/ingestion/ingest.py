@@ -53,32 +53,3 @@ def ingest_book(book_path: Path, retries: int = 3) -> bool:
 
     print(f"❌ Could not save: {book_path.stem}")
     return False
-
-
-def main():
-    books = list(DATA_DIR.glob("*.docx"))
-
-    if not books:
-        print("❌ No .docx books found in data/")
-        return
-
-    print(f"\n🚀 Books found: {len(books)}")
-    for book in books:
-        print(f"  - {book.stem}")
-
-    failed = []
-    for i, book_path in enumerate(books, 1):
-        print(f"\n[{i}/{len(books)}]", end="")
-        success = ingest_book(book_path)
-        if not success:
-            failed.append(book_path.stem)
-
-    print(f"\n{'='*50}")
-    print(f"🎉 Ready! Loaded: {len(books) - len(failed)}/{len(books)}")
-    if failed:
-        print(f"❌ Could not load: {', '.join(failed)}")
-    print(f"{'='*50}\n")
-
-
-if __name__ == "__main__":
-    main()

@@ -17,8 +17,4 @@ async def ask(request: AskRequest):
 
     answer = await rag_service.ask(request.query, request.book_name)
 
-    return AskResponse(
-        answer=answer,
-        book_name=request.book_name,
-        query=request.query,
-    )
+    return AskResponse(answer=answer)

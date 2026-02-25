@@ -7,5 +7,3 @@ class AskRequest(BaseModel):
 
 class AskResponse(BaseModel):
     answer: str
-    book_name: str
-    query: str
