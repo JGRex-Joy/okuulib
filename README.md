@@ -1,7 +1,6 @@
-# OkuuLib — RAG-сервис для кыргызской литературы
+# OkuuLib 
 
-REST API для индексации `.docx` книг и ответов на вопросы по их содержимому. Использует гибридный поиск (dense + sparse) через Qdrant и генерацию ответов через OpenAI GPT.
-
+REST API для индексации `.docx` книг и ответов на вопросы по их содержимому. 
 ---
 
 ## Стек
@@ -24,12 +23,9 @@ REST API для индексации `.docx` книг и ответов на в�
 Создай `.env` в корне проекта:
 
 ```env
-QDRANT_URL=https://your-qdrant-instance
-QDRANT_API_KEY=your_qdrant_api_key
-OPENAI_API_KEY=your_openai_api_key
-
-# Опционально — значения по умолчанию уже выставлены в config.py
-COLLECTION_NAME=okuulib
+QDRANT_URL=...
+QDRANT_API_KEY=...
+OPENAI_API_KEY=...
 ```
 
 ### 2. Запуск через Docker
@@ -62,7 +58,6 @@ src/
 │   │   ├── router.py                # POST /ingest/upload, DELETE /ingest/delete
 │   │   └── schemas.py               # Pydantic схемы запросов/ответов
 │   ├── chunk.py                     # Разбивка текста на чанки
-│   ├── clean.py                     # Очистка .docx от мусора (bizdin.kg)
 │   ├── cli.py                       # Консольная индексация книг
 │   ├── ingest.py                    # Основная логика: загрузка → чанки → embeddings → Qdrant
 │   └── load_docx.py                 # Загрузка .docx через Docx2txtLoader
@@ -122,17 +117,6 @@ curl -X POST http://localhost:8000/ingest/upload \
   -F "file=@data/manas.docx"
 ```
 
-```python
-import requests
-
-with open("data/manas.docx", "rb") as f:
-    r = requests.post(
-        "http://localhost:8000/ingest/upload",
-        files={"file": ("manas.docx", f)}
-    )
-print(r.json())
-```
-
 **Ответ `200`:**
 ```json
 {
@@ -153,7 +137,7 @@ print(r.json())
 
 Удаляет все чанки книги из Qdrant и файл из `data/`.
 
-**Параметр пути:** `book_name` — имя книги **без расширения** (например `manas`, не `manas.docx`)
+**Параметр пути:** `book_name` - имя книги **без расширения** (например `manas`, не `manas.docx`)
 
 ```bash
 curl -X DELETE http://localhost:8000/ingest/delete/manas
@@ -192,19 +176,6 @@ curl -X POST http://localhost:8000/retrieval/ask \
   -d '{"query": "Манас кандай баатыр болгон?", "book_name": "manas"}'
 ```
 
-```python
-import requests
-
-r = requests.post(
-    "http://localhost:8000/retrieval/ask",
-    json={
-        "query": "Манас кандай баатыр болгон?",
-        "book_name": "manas"
-    }
-)
-print(r.json()["answer"])
-```
-
 **Ответ `200`:**
 ```json
 {
@@ -237,7 +208,7 @@ print(r.json()["answer"])
                                                     Ответ на кыргызском
 ```
 
-Гибридный поиск объединяет два сигнала: семантическое сходство (dense) и точное совпадение слов (sparse/BM25). Итоговый рейтинг формируется через **RRF (Reciprocal Rank Fusion)** — стандартный алгоритм слияния ранжированных списков.
+Гибридный поиск объединяет два сигнала: семантическое сходство (dense) и точное совпадение слов (sparse/BM25). Итоговый рейтинг формируется через **RRF (Reciprocal Rank Fusion)** - стандартный алгоритм слияния ранжированных списков.
 
 ---
 
