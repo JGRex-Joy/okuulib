@@ -10,7 +10,7 @@ class Chunker:
         self.splitter = RecursiveCharacterTextSplitter(
             chunk_size=settings.CHUNK_SIZE,
             chunk_overlap=settings.CHUNK_OVERLAP,
-            separators=["\n\n", "\n", ".", " ", ""]
+            separators=["\n\n", "\n", " ", ""]
         )
         
     def chunk(self, documents: List[Document]) -> List[Document]:
