@@ -4,8 +4,6 @@
 Использование:
   Все книги:       python -m src.ingestion.cli
   Одна книга:      python -m src.ingestion.cli data/книга.docx
-  С очисткой:      python -m src.ingestion.cli --clean
-  Одна + очистка:  python -m src.ingestion.cli data/книга.docx --clean
 """
 
 import sys
@@ -13,7 +11,6 @@ import argparse
 from pathlib import Path
 
 from src.ingestion.ingest import ingest_book
-from src.ingestion.clean import clean_docx
 
 DATA_DIR = Path("data")
 
@@ -31,11 +28,6 @@ def run(target: Path, clean: bool) -> None:
     print(f"\n🚀 Books found: {len(books)}")
     for book in books:
         print(f"  - {book.stem}")
-
-    if clean:
-        print("\n🧹 Clearing...")
-        for book in books:
-            clean_docx(book)
 
     failed = []
     for i, book_path in enumerate(books, 1):
